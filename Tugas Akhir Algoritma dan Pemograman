@@ -1,0 +1,316 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
+\\Nama :Muhammad Daffa Septian Ashandi
+\\NIM  :12250511038
+
+int verifikasiNomorRekening(const char* nomorRekening) {
+    size_t len = strlen(nomorRekening);
+    if (len < 1 || len > 10) { 
+        return 0;
+    }
+    for (size_t i = 0; i < len; ++i) {
+        if (!isdigit(nomorRekening[i])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void formatSaldo(float saldo, char* saldoStr) {
+    sprintf(saldoStr, "%.0f", saldo);
+    int len = strlen(saldoStr);
+    for (int i = len - 3; i > 0; i -= 3) {
+        memmove(saldoStr + i + 1, saldoStr + i, len - i + 1);
+        saldoStr[i] = '.';
+        len++;
+    }
+}
+
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
+int main() {
+    const char* nomorRekeningArray[] = {"1", "2", "3"};
+    int pinArray[] = {1, 2, 3};
+    const int jumlahRekening = sizeof(nomorRekeningArray) / sizeof(nomorRekeningArray[0]);
+    float saldo = 10000000;
+    int pilihan, percobaanLogin;
+    float saldoAkhir, jumlahTransfer;
+    char namaBank[10], nomorRekeningTujuan[11], kodeBankTujuan[3];
+    float topUpShopeePay, topUpGoPay, topUpDana, topUpOVO, topUpLinkAja;
+    int jumlahPenarikan;
+
+    while (1) {
+        char nomorRekening[11];
+        clearScreen();
+        printf("                                              ==============\n");
+        printf("                                              SELAMAT DATANG\n");
+        printf("                                                    DI\n");
+        printf("                                              BANK KAPITALIS\n");
+        printf("                                              ==============\n\n");
+        printf("Silakan masukkan nomor rekening Anda: ");
+        scanf("%10s", nomorRekening);
+
+        if (!verifikasiNomorRekening(nomorRekening)) {
+            printf("Nomor rekening tidak valid. Silakan coba lagi.\n");
+            continue;
+        }
+
+        int pin = 0;
+        int rekeningDitemukan = 0;
+        for (int i = 0; i < jumlahRekening; i++) {
+            if (strcmp(nomorRekeningArray[i], nomorRekening) == 0) {
+                pin = pinArray[i];
+                rekeningDitemukan = 1;
+                break;
+            }
+        }
+
+        if (!rekeningDitemukan) {
+            printf("Nomor rekening tidak terdaftar. Silakan coba lagi.\n");
+            continue;
+        }
+
+        while (1) {
+            percobaanLogin = 0;
+            while (percobaanLogin < 3) {
+                int inputPin;
+                printf("Masukkan PIN: ");
+                scanf("%d", &inputPin);
+
+                if (inputPin == pin) {
+                    printf("\nLogin Berhasil!\n");
+                    break;
+                } else {
+                    printf("PIN tidak valid. Silakan coba lagi.\n");
+                    percobaanLogin++;
+                }
+            }
+
+            if (percobaanLogin == 3) {
+                printf("Anda Salah Memasukkan PIN Lebih dari 3 Kali, Rekening Anda Terblokir.\n");
+                return 1;
+            }
+
+            clearScreen();
+            printf("============================\n");
+            printf("SILAHKAN PILIH MENU BERIKUT:\n");
+            printf("============================\n");
+            printf("1. Saldo\n");
+            printf("2. Setor Tunai\n");
+            printf("3. Tarik Tunai\n");
+            printf("4. Transfer\n");
+            printf("5. Top Up\n");
+            printf("6. Exit\n");
+            printf("Ketikkan Angka: ");
+            scanf("%d", &pilihan);
+
+            if (pilihan == 6) {
+                printf("Logout Berhasil.\n");
+                break;
+            }
+
+            switch (pilihan) {
+                case 1:
+                	printf("\n");
+                    printf("Saldo Anda Saat Ini Adalah: Rp ");
+                    char formattedSaldo[20];
+                    formatSaldo(saldo, formattedSaldo);
+                    printf("%s\n", formattedSaldo);
+                    break;
+                case 2: {
+                    int jumlahIsiSaldo;
+                    printf("Masukkan Jumlah Uang (kelipatan 50,000 atau 100,000): ");
+                    scanf("%d", &jumlahIsiSaldo);
+                    if (jumlahIsiSaldo < 50000 || (jumlahIsiSaldo % 50000 != 0 && jumlahIsiSaldo % 100000 != 0)) {
+                        printf("Jumlah setor tunai harus kelipatan 50,000 atau 100,000.\n");
+                    } else {
+                        saldo += jumlahIsiSaldo;
+                        formatSaldo(saldo, formattedSaldo);
+                        printf("Isi Saldo Berhasil. Sisa Saldo: Rp %s\n", formattedSaldo);
+                    }
+                    break;
+                }
+                case 3: {
+                    printf("Pilih nominal pecahan yang diinginkan:\n");
+                    printf("1. 50,000\n");
+                    printf("2. 100,000\n");
+                    printf("Masukkan pilihan Anda: ");
+                    int pecahan;
+                    scanf("%d", &pecahan);
+                    printf("Masukkan jumlah yang ingin Anda tarik: ");
+                    scanf("%d", &jumlahPenarikan);
+                    if (jumlahPenarikan > saldo) {
+                        printf("Saldo tidak cukup.\n");
+                    } else {
+                        if (pecahan == 1 && jumlahPenarikan % 50000 != 0) {
+                            printf("Jumlah penarikan harus kelipatan 50,000.\n");
+                        } else if (pecahan == 2 && jumlahPenarikan % 100000 != 0) {
+                            printf("Jumlah penarikan harus kelipatan 100,000.\n");
+                        } else {
+                            saldo -= jumlahPenarikan;
+                            formatSaldo(saldo, formattedSaldo);
+                            printf("\n");
+                            printf("Penarikan berhasil\n");
+                            printf("\n");
+							printf("Jumlah saldo Anda saat ini adalah: Rp %s\n", formattedSaldo);
+                        }
+                    }
+                    break;
+                }
+                case 4:
+                    printf("Masukkan nama bank tujuan: ");
+                    getchar();
+                    fgets(namaBank, 10, stdin);
+                    namaBank[strcspn(namaBank, "\n")] = '\0';
+                    printf("Masukkan nomor rekening tujuan: ");
+                    fgets(nomorRekeningTujuan, 11, stdin);
+                    nomorRekeningTujuan[strcspn(nomorRekeningTujuan, "\n")] = '\0';
+                    printf("Masukkan kode bank tujuan: ");
+                    fgets(kodeBankTujuan, 3, stdin);
+                    kodeBankTujuan[strcspn(kodeBankTujuan, "\n")] = '\0';
+                    printf("Masukkan jumlah yang ingin Anda transfer: ");
+                    scanf("%f", &jumlahTransfer);
+                    if (jumlahTransfer > saldo) {
+                        printf("Maaf, saldo Anda tidak mencukupi untuk melakukan transfer sebesar Rp ");
+                        formatSaldo(jumlahTransfer, formattedSaldo);
+                        printf("%s\n", formattedSaldo);
+                    } else {
+                        saldoAkhir = saldo - jumlahTransfer;
+                        saldo = saldoAkhir;
+                        formatSaldo(jumlahTransfer, formattedSaldo);
+                        printf("Transfer sebesar Rp %s berhasil dilakukan ke rekening %s di bank %s dengan kode bank tujuan %s.\n", formattedSaldo, nomorRekeningTujuan, namaBank, kodeBankTujuan);
+                        formatSaldo(saldoAkhir, formattedSaldo);
+                        printf("Saldo Anda sekarang adalah Rp %s\n", formattedSaldo);
+                    }
+                    break;
+                case 5:
+                    printf("Menu Top Up\n");
+                    printf("1. ShopeePay\n");
+                    printf("2. GoPay\n");
+                    printf("3. Dana\n");
+                    printf("4. OVO\n");
+                    printf("5. LinkAja\n");
+                    printf("Ketikkan Angka: ");
+                    int pilihanTopUp;
+                    scanf("%d", &pilihanTopUp);
+                    switch (pilihanTopUp) {
+                        case 1: {
+                            char nomorShopeePay[15];
+                            printf("Masukkan Nomor ShopeePay Anda: ");
+                            getchar();
+                            fgets(nomorShopeePay, 15, stdin);
+                            nomorShopeePay[strcspn(nomorShopeePay, "\n")] = '\0';
+                            printf("Masukkan Jumlah Yang Akan Di Isi Ulang: ");
+                            scanf("%f", &topUpShopeePay);
+                            if (topUpShopeePay > saldo) {
+                                printf("Saldo Tidak Cukup.\n");
+                            } else {
+                                saldo -= topUpShopeePay;
+                                formatSaldo(saldo, formattedSaldo);
+                                printf("Isi Ulang Berhasil. Sisa Saldo Anda Saat Ini Adalah: Rp %s\n", formattedSaldo);
+                            }
+                            break;
+                        }
+                        case 2: {
+                            char nomorGoPay[15];
+                            printf("Masukkan Nomor GoPay Anda: ");
+                            getchar();
+                            fgets(nomorGoPay, 15, stdin);
+                            nomorGoPay[strcspn(nomorGoPay, "\n")] = '\0';
+                            printf("Masukkan Jumlah Yang Akan Di Isi Ulang: ");
+                            scanf("%f", &topUpGoPay);
+                            if (topUpGoPay > saldo) {
+                                printf("Saldo Tidak Cukup.\n");
+                            } else {
+                                saldo -= topUpGoPay;
+                                formatSaldo(saldo, formattedSaldo);
+                                printf("Isi Ulang Berhasil. Sisa Saldo Anda Saat Ini Adalah: Rp %s\n", formattedSaldo);
+                            }
+                            break;
+                        }
+                        case 3: {
+                            char nomorDana[15];
+                            printf("Masukkan Nomor Dana Anda: ");
+                            getchar();
+                            fgets(nomorDana, 15, stdin);
+                            nomorDana[strcspn(nomorDana, "\n")] = '\0';
+                            printf("Masukkan Jumlah Yang Akan Di Isi Ulang: ");
+                            scanf("%f", &topUpDana);
+                            if (topUpDana > saldo) {
+                                printf("Saldo Tidak Cukup.\n");
+                            } else {
+                                saldo -= topUpDana;
+                                formatSaldo(saldo, formattedSaldo);
+                                printf("Isi Ulang Berhasil. Sisa Saldo Anda Saat Ini Adalah: Rp %s\n", formattedSaldo);
+                            }
+                            break;
+                        }
+                        case 4: {
+                            char nomorOVO[15];
+                            printf("Masukkan Nomor OVO Anda: ");
+                            getchar();
+                            fgets(nomorOVO, 15, stdin);
+                            nomorOVO[strcspn(nomorOVO, "\n")] = '\0';
+                            printf("Masukkan Jumlah Yang Akan Di Isi Ulang: ");
+                            scanf("%f", &topUpOVO);
+                            if (topUpOVO > saldo) {
+                                printf("Saldo Tidak Cukup.\n");
+                            } else {
+                                saldo -= topUpOVO;
+                                formatSaldo(saldo, formattedSaldo);
+                                printf("Isi Ulang Berhasil. Sisa Saldo Anda Saat Ini Adalah: Rp %s\n", formattedSaldo);
+                            }
+                            break;
+                        }
+                        case 5: {
+                            char nomorLinkAja[15];
+                            printf("Masukkan Nomor LinkAja Anda: ");
+                            getchar();
+                            fgets(nomorLinkAja, 15, stdin);
+                            nomorLinkAja[strcspn(nomorLinkAja, "\n")] = '\0';
+                            printf("Masukkan Jumlah Yang Akan Di Isi Ulang: ");
+                            scanf("%f", &topUpLinkAja);
+                            if (topUpLinkAja > saldo) {
+                                printf("Saldo Tidak Cukup.\n");
+                            } else {
+                                saldo -= topUpLinkAja;
+                                formatSaldo(saldo, formattedSaldo);
+                                printf("Isi Ulang Berhasil. Sisa Saldo Anda Saat Ini Adalah: Rp %s\n", formattedSaldo);
+                            }
+                            break;
+                        }
+                        default:
+                            printf("\nOpsi Tidak Valid.\n");
+                            break;
+                    }
+                    break;
+                default:
+                    printf("Opsi Tidak Valid.\n");
+                    break;
+            }
+            printf("\nApakah Anda ingin melakukan transaksi lainnya? (y/n): ");
+            char transaksiLainnya;
+            scanf(" %c", &transaksiLainnya);
+            if (transaksiLainnya != 'y' && transaksiLainnya != 'Y') {
+                clearScreen();
+                printf("                                              Terima Kasih telah\n");
+                printf("                                           Menggunakan Layanan Kami:)\n");
+                printf("\n");
+                printf("                                              Tekan Enter untuk\n");
+                printf("                                           Mencabut Kartu ATM Anda!\n");
+                return 0;
+            }
+            clearScreen();
+        }
+    }
+    return 0;
+}
